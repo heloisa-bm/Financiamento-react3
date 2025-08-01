@@ -1,75 +1,94 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
-}
+import React, { useState } from "react";
+import { Text, View, Button, StyleSheet, TextInput } from "react-native";
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    justifyContent: "space-around",
+    alignItems: "center",
+    backgroundColor: "#efefef",
+    padding: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 26,
+    color: "#AA2200",
+    fontWeight: "bold",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  text: {
+    fontSize: 20,
+    color: "#121212",
+    textAlign: "center"
   },
+  input: {
+    width: "80%",
+    borderColor: "#000",
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: "#fff",
+    marginBottom: 10
+  }
 });
+
+export default function Index(): JSX.Element {
+  const [valorBem, setValorBem] = useState<string>("");
+  const [parcelas, setParcelas] = useState<string>("");
+  const [jurosMensal, setJurosMensal] = useState<string>("");
+  const [taxasAdicionais, setTaxasAdicionais] = useState<string>("");
+  const [resultado, setResultado] = useState<string>("");
+
+  const calcularFinanciamento = (): void => {
+    const c = parseFloat(valorBem.replace(",", ".")); // capital
+    const t = parseInt(parcelas); // número de parcelas
+    const i = parseFloat(jurosMensal.replace(",", ".")) / 100; // juros mensal em decimal
+    const taxas = parseFloat(taxasAdicionais.replace(",", ".")) || 0;
+
+    if (isNaN(c) || isNaN(t) || isNaN(i) || t === 0) {
+      setResultado("Preencha todos os campos corretamente.");
+      return;
+    }
+
+    const m = c * Math.pow(1 + i, t) + taxas;
+    const p = m / t;
+
+    setResultado(`Parcela: R$ ${p.toFixed(2)}\nMontante Total: R$ ${m.toFixed(2)}`);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Simulador de Financiamento</Text>
+
+      <TextInput
+        placeholder="Valor do bem (R$)"
+        style={styles.input}
+        keyboardType="numeric"
+        value={valorBem}
+        onChangeText={setValorBem}
+      />
+      <TextInput
+        placeholder="Número de parcelas"
+        style={styles.input}
+        keyboardType="numeric"
+        value={parcelas}
+        onChangeText={setParcelas}
+      />
+      <TextInput
+        placeholder="Taxa de juros mensal (%)"
+        style={styles.input}
+        keyboardType="numeric"
+        value={jurosMensal}
+        onChangeText={setJurosMensal}
+      />
+      <TextInput
+        placeholder="Taxas adicionais (R$)"
+        style={styles.input}
+        keyboardType="numeric"
+        value={taxasAdicionais}
+        onChangeText={setTaxasAdicionais}
+      />
+
+      <Button title="Calcular" onPress={calcularFinanciamento} />
+      <Text style={styles.text}>{resultado}</Text>
+    </View>
+  );
+}
